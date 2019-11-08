@@ -1,29 +1,28 @@
-version: "3"
+version: '3.3'
 
 services:
-  vote:
-    build: ./vote
-    command: python app.py
-    volumes:
-     - ./vote:/app
-    ports:
-      - "5000:80"
+   db:
+     image: mysql:5.7
+     volumes:
+       - db_data:/var/lib/mysql
+     restart: always
+     environment:
+       MYSQL_ROOT_PASSWORD: somewordpress
+       MYSQL_DATABASE: wordpress
+       MYSQL_USER: wordpress
+       MYSQL_PASSWORD: wordpress
 
-  redis:
-    image: redis:alpine
-    ports: ["6379"]
-
-  worker:
-    build: ./worker
-
-  db:
-    image: postgres:9.4
-
-  result:
-    build: ./result
-    command: nodemon server.js
-    volumes:
-      - ./result:/app
-    ports:
-      - "5001:80"
-      - "5858:5858"
+   wordpress:
+     depends_on:
+       - db
+     image: wordpress:latest
+     ports:
+       - "8000:80"
+     restart: always
+     environment:
+       WORDPRESS_DB_HOST: db:3306
+       WORDPRESS_DB_USER: wordpress
+       WORDPRESS_DB_PASSWORD: wordpress
+       WORDPRESS_DB_NAME: wordpress
+volumes:
+    db_data: {}
